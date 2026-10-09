@@ -20,7 +20,11 @@ class DataSettings:
     """Locations for source data and generated artifacts."""
 
     corpus_path: Path
+    corpus_source: str
     vix_path: Path
+    market_source: str
+    market_series_id: str
+    processing_version: str
     processed_dir: Path
     cache_dir: Path
     artifacts_dir: Path
@@ -177,7 +181,11 @@ def load_settings(
             corpus_path=_path(
                 root_dir, _required(data, "corpus_path", "data"), "data.corpus_path"
             ),
+            corpus_source=str(_required(data, "corpus_source", "data")).strip(),
             vix_path=_path(root_dir, _required(data, "vix_path", "data"), "data.vix_path"),
+            market_source=str(_required(data, "market_source", "data")).strip(),
+            market_series_id=str(_required(data, "market_series_id", "data")).strip(),
+            processing_version=str(_required(data, "processing_version", "data")).strip(),
             processed_dir=_path(
                 root_dir, _required(data, "processed_dir", "data"), "data.processed_dir"
             ),

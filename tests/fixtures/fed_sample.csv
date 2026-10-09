@@ -1,0 +1,5 @@
+url,doc_type,date,text,year,meeting
+https://WWW.FederalReserve.gov/monetarypolicy/files/sample.pdf?utm_source=test,transcript,2020-03-15,"Conference call. We do not support removing this policy discussion.",2020,sample.pdf
+https://www.federalreserve.gov/newsevents/pressreleases/sample.htm,statement,2020-03-15,"For immediate release. Policy remains unchanged.",2020,sample.htm
+https://www.federalreserve.gov/newsevents/pressreleases/sample-copy.htm,statement,2020-03-16,"For immediate release. Policy remains unchanged.",2020,sample-copy.htm
+

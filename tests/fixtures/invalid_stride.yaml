@@ -2,7 +2,11 @@ project:
   name: test
 data:
   corpus_path: corpus.csv
+  corpus_source: test corpus
   vix_path: vix.csv
+  market_source: test market data
+  market_series_id: VIXCLS
+  processing_version: "test"
   processed_dir: processed
   cache_dir: cache
   artifacts_dir: artifacts

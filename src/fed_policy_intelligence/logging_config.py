@@ -8,7 +8,6 @@ import sys
 from datetime import UTC, datetime
 from typing import TextIO
 
-
 _STANDARD_ATTRIBUTES = set(logging.makeLogRecord({}).__dict__) | {
     "message",
     "asctime",

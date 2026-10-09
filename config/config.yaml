@@ -3,7 +3,11 @@ project:
 
 data:
   corpus_path: fomc_corpus.csv
+  corpus_source: Federal Reserve URLs embedded in the local corpus
   vix_path: VIXCLS.csv
+  market_source: Undocumented local VIXCLS.csv
+  market_series_id: VIXCLS
+  processing_version: "1.0"
   processed_dir: data/processed
   cache_dir: cache
   artifacts_dir: artifacts

@@ -48,9 +48,12 @@ The intended package is `fed_policy_intelligence`. Only implemented modules are 
 |---|---|---|
 | `settings.py` | Load and validate YAML settings, resolve paths, apply narrow environment overrides | Implemented |
 | `logging_config.py` | Configure consistent JSON or human-readable process logs | Implemented |
-| `data/identity.py` | Canonical URLs, document IDs, content hashes, duplicate decisions | Deferred to the data-pipeline phase |
-| `data/preprocessing.py` | Versioned text cleaning with removal diagnostics | Deferred |
-| `data/market.py` | Market provider interface, validation, and trading calendar | Deferred |
+| `data/identity.py` | Canonical URLs, document IDs, content hashes, and file hashes | Implemented in Phase 3 |
+| `data/ingestion.py` | Lossless local CSV ingestion and normalized document/market records | Implemented in Phase 3 |
+| `data/preprocessing.py` | Versioned conservative text cleaning with removal diagnostics | Implemented in Phase 3 |
+| `data/validation.py` | Dataset counts, warnings, errors, and exclusion reporting | Implemented in Phase 3 |
+| `data/pipeline.py` | CLI orchestration and atomic processed-output writing | Implemented in Phase 3 |
+| Market download provider and trading calendar | New-data acquisition and exchange-session logic | Deferred |
 | `nlp/chunking.py` | Tokenizer-explicit long-document chunking and aggregation | Deferred |
 | `nlp/sentiment.py` | FinBERT inference with full probabilities and metadata | Deferred |
 | `nlp/emotion.py` | Emotion inference with its paired tokenizer and complete label space | Deferred |
@@ -112,7 +115,7 @@ The default device is `cpu` and the default LLM provider is `mock`. Colab can se
 
 ## Dependency strategy
 
-`pyproject.toml` is the single dependency source. Phase 2 declares only PyYAML and development tools needed by the implemented scaffold. Pandas, Transformers, PyTorch, statsmodels, Streamlit, topic-modeling libraries, market calendars, and provider SDKs will be added in the phase that introduces tested code using them. This avoids claiming untested compatibility.
+`pyproject.toml` is the single dependency source. Phase 2 introduced PyYAML and development tools; Phase 3 added pandas for the tested tabular pipeline. Transformers, PyTorch, statsmodels, Streamlit, topic-modeling libraries, market calendars, and provider SDKs will be added only in the phase that introduces tested code using them. This avoids claiming untested compatibility.
 
 ## Local and Colab execution
 
@@ -123,8 +126,8 @@ The default device is `cpu` and the default LLM provider is `mock`. Colab can se
 
 ## Delivery sequence after Phase 2
 
-1. Implement document identity, validation, and safe preprocessing for the existing corpus.
-2. Implement market-data validation while preserving the existing VIX source.
+1. Completed: document identity, validation, and safe preprocessing for the existing corpus.
+2. Completed: local market-data validation while preserving every existing VIX row.
 3. Implement tokenizer-safe sentiment and emotion inference with cached outputs.
 4. Rebuild topic discovery and evaluation.
 5. Implement event alignment, outcomes, baseline models, and robustness checks.
