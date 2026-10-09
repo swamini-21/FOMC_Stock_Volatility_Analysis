@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.pytest_tmp/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+
+# Secrets and local configuration
+.env
+
+# Notebook state
+.ipynb_checkpoints/
+
+# Downloaded data and generated artifacts
+/fomc_corpus.csv
+/VIXCLS.csv
+/data/raw/*
+/data/processed/*
+/artifacts/*
+/cache/*
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# Notebook-generated outputs
+/FinalVIX.csv
+/fomc_statement.csv
+/fomc_transcript.csv
+/fomc_statement_topics.csv
+/fomc_transcript_topics.csv
+/*WordCloud.png
+/vix_full_summary.txt
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+

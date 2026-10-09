@@ -1,0 +1,25 @@
+project:
+  name: federal-reserve-policy-intelligence
+
+data:
+  corpus_path: fomc_corpus.csv
+  vix_path: VIXCLS.csv
+  processed_dir: data/processed
+  cache_dir: cache
+  artifacts_dir: artifacts
+
+runtime:
+  seed: 42
+  device: cpu
+  log_level: INFO
+
+models:
+  sentiment_model: ProsusAI/finbert
+  emotion_model: j-hartmann/emotion-english-distilroberta-base
+  max_length: 512
+  stride: 64
+  batch_size: 8
+
+llm:
+  provider: mock
+

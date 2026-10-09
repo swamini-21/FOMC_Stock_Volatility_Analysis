@@ -1,0 +1,21 @@
+project:
+  name: test
+data:
+  corpus_path: corpus.csv
+  vix_path: vix.csv
+  processed_dir: processed
+  cache_dir: cache
+  artifacts_dir: artifacts
+runtime:
+  seed: 42
+  device: cpu
+  log_level: INFO
+models:
+  sentiment_model: sentiment/model
+  emotion_model: emotion/model
+  max_length: 128
+  stride: 127
+  batch_size: 4
+llm:
+  provider: mock
+
