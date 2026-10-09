@@ -54,14 +54,15 @@ The intended package is `fed_policy_intelligence`. Only implemented modules are 
 | `data/validation.py` | Dataset counts, warnings, errors, and exclusion reporting | Implemented in Phase 3 |
 | `data/pipeline.py` | CLI orchestration and atomic processed-output writing | Implemented in Phase 3 |
 | Market download provider and trading calendar | New-data acquisition and exchange-session logic | Deferred |
-| `nlp/chunking.py` | Tokenizer-explicit long-document chunking and aggregation | Deferred |
-| `nlp/sentiment.py` | FinBERT inference with full probabilities and metadata | Deferred |
-| `nlp/emotion.py` | Emotion inference with its paired tokenizer and complete label space | Deferred |
-| `nlp/topics.py` | LDA baseline and later embedding-model comparison | Deferred |
-| `nlp/policy.py` | Transparent and LLM-assisted policy stance extraction | Deferred |
+| `nlp/chunking.py` | Tokenizer-explicit long-document chunking | Implemented in Phase 4 |
+| `nlp/transformer.py` | Batched CPU/GPU inference and probability aggregation | Implemented in Phase 4 |
+| `nlp/sentiment.py` | FinBERT inference with full probabilities and metadata | Implemented; real-model evaluation pending |
+| `nlp/emotion.py` | Emotion inference with its paired tokenizer and complete label space | Implemented; real-model evaluation pending |
+| `nlp/topics.py` | LDA baseline and optional embedding-model comparison | Implemented; corpus comparison pending |
+| `nlp/policy.py` | Transparent policy-stance baseline with abstention | Implemented in Phase 4; LLM deferred |
 | `analysis/events.py` | Announcement-to-session alignment and event windows | Deferred |
 | `analysis/regression.py` | Explicit baseline/enhanced models and diagnostics | Deferred |
-| `evaluation/` | Annotation data, metrics, error analysis, and evidence checks | Deferred |
+| `evaluation/` | Annotation schema and classification metrics | Partially implemented in Phase 4 |
 | `app/` | Streamlit views backed by cached outputs | Deferred |
 
 This phased creation policy prevents empty modules and documentation that implies unfinished features are available.
@@ -115,11 +116,11 @@ The default device is `cpu` and the default LLM provider is `mock`. Colab can se
 
 ## Dependency strategy
 
-`pyproject.toml` is the single dependency source. Phase 2 introduced PyYAML and development tools; Phase 3 added pandas for the tested tabular pipeline. Transformers, PyTorch, statsmodels, Streamlit, topic-modeling libraries, market calendars, and provider SDKs will be added only in the phase that introduces tested code using them. This avoids claiming untested compatibility.
+`pyproject.toml` is the single dependency source. Phase 2 introduced PyYAML and development tools; Phase 3 added pandas for the tested tabular pipeline. Phase 4 added optional scikit-learn, Transformers, and PyTorch dependencies. PyTorch is currently constrained to `>=2.8,<2.9` because the tested Windows host encountered a reproducible `c10.dll` initialization failure with later wheels. The verified NVIDIA environment uses `torch 2.8.0+cu128`; GPU wheels must be installed from the official PyTorch index before the project extras. Statsmodels, Streamlit, market calendars, and provider SDKs will be added only in the phase that introduces tested code using them.
 
 ## Local and Colab execution
 
-- Local development targets Python 3.11 or 3.12 and CPU by default.
+- Local development targets Python 3.11 or 3.12 and CPU by default. The tested optional Windows GPU path is documented in `docs/windows_gpu_setup.md`.
 - Model inference will use configurable batches and persistent caches suitable for a small CPU demonstration.
 - Colab will use the same package and configuration, changing only device and storage paths where necessary.
 - Generated data, caches, weights, and credentials are excluded from Git.

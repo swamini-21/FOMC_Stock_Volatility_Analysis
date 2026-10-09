@@ -19,6 +19,16 @@ dev = [
     "pytest-cov>=5,<8",
     "ruff>=0.9,<1",
 ]
+nlp = [
+    "scikit-learn>=1.5,<2",
+    # PyTorch 2.9+ currently fails to initialize c10.dll on the tested Windows host.
+    "torch>=2.8,<2.9",
+    "transformers>=4.46,<5",
+]
+topic-comparison = [
+    "bertopic>=0.17,<1",
+    "umap-learn>=0.5,<1",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
