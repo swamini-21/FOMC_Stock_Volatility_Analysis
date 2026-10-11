@@ -1,0 +1,3 @@
+document_id,split,financial_sentiment,emotion,policy_stance,policy_evidence,annotator_id,annotated_at,annotator_notes
+doc-1,evaluation,positive,neutral,dovish,supporting words,1,2026-10-10,reviewed
+doc-2,development,positive,neutral,dovish,supporting words,1,2026-10-10,reviewed

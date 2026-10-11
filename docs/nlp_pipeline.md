@@ -110,9 +110,10 @@ Model weights, prediction caches, and processed outputs remain excluded from Git
 
 ## What is not yet claimed
 
-- The five-document smoke test produced five successful FinBERT and emotion prediction
-  rows with no inference errors. The full 773-document corpus has not been processed.
-- No manually reviewed evaluation sample exists yet.
-- No classification score, topic coherence, model superiority, or market relationship
-  is claimed.
+- The full 773-document corpus completed FinBERT, emotion, and policy-rule inference
+  locally using the tested CUDA environment.
+- A manually reviewed sample now contains seven development and 21 held-out evaluation
+  documents. Baseline scores and limitations are reported in
+  `docs/model_evaluation_results.md`.
+- No topic coherence, model superiority, or market relationship is claimed.
 - BERTopic is an optional comparison path and has not been installed or run locally.

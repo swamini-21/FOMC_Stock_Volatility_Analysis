@@ -56,13 +56,13 @@ The intended package is `fed_policy_intelligence`. Only implemented modules are 
 | Market download provider and trading calendar | New-data acquisition and exchange-session logic | Deferred |
 | `nlp/chunking.py` | Tokenizer-explicit long-document chunking | Implemented in Phase 4 |
 | `nlp/transformer.py` | Batched CPU/GPU inference and probability aggregation | Implemented in Phase 4 |
-| `nlp/sentiment.py` | FinBERT inference with full probabilities and metadata | Implemented; real-model evaluation pending |
-| `nlp/emotion.py` | Emotion inference with its paired tokenizer and complete label space | Implemented; real-model evaluation pending |
+| `nlp/sentiment.py` | FinBERT inference with full probabilities and metadata | Implemented and evaluated as a Phase 4 baseline |
+| `nlp/emotion.py` | Emotion inference with its paired tokenizer and complete label space | Implemented; neutral-only evaluation coverage is documented |
 | `nlp/topics.py` | LDA baseline and optional embedding-model comparison | Implemented; corpus comparison pending |
 | `nlp/policy.py` | Transparent policy-stance baseline with abstention | Implemented in Phase 4; LLM deferred |
 | `analysis/events.py` | Announcement-to-session alignment and event windows | Deferred |
 | `analysis/regression.py` | Explicit baseline/enhanced models and diagnostics | Deferred |
-| `evaluation/` | Annotation schema and classification metrics | Partially implemented in Phase 4 |
+| `evaluation/` | Reviewed annotation schema, validation, classification metrics, and mismatch reporting | Implemented in Phase 4 |
 | `app/` | Streamlit views backed by cached outputs | Deferred |
 
 This phased creation policy prevents empty modules and documentation that implies unfinished features are available.

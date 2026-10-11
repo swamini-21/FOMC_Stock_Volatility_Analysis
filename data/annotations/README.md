@@ -3,6 +3,11 @@
 `annotation_template.csv` is an empty, versioned schema for a manually reviewed
 evaluation set. It deliberately contains no inferred or synthetic gold labels.
 
+`fomc_evaluation_annotations.csv` contains the reviewed Phase 4 development and
+evaluation labels exported from the working Excel annotation workbook. The Excel file
+is retained as the human-review source; the CSV is the stable input to automated
+evaluation.
+
 Annotators should read the full document and assign:
 
 - financial sentiment: `positive`, `negative`, or `neutral`, using the expected
@@ -16,3 +21,13 @@ Annotators should read the full document and assign:
 Rows used during rule or prompt development must be marked `development`. Final
 performance estimates must use rows marked `evaluation`. A second annotator and
 agreement measurement are preferred for subjective labels.
+
+Run evaluation after generating `data/processed/nlp_predictions.csv`:
+
+```bash
+python -m fed_policy_intelligence.evaluation.pipeline --config config/config.yaml
+```
+
+The command writes the machine-readable metric report and row-level mismatches to the
+ignored `data/processed` directory. It fails rather than silently scoring missing or
+failed prediction rows.

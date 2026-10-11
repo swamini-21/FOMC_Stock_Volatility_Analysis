@@ -1,6 +1,6 @@
 # FOMC Stock Market Volatility Analysis
 
-This project is being rebuilt from an exploratory notebook into a reproducible Federal Reserve policy-intelligence and market-reaction application. Work proceeds in reviewed phases; the current repository contains the audit, architecture scaffold, validated local-data pipeline, and testable Phase 4 NLP components.
+This project is being rebuilt from an exploratory notebook into a reproducible Federal Reserve policy-intelligence and market-reaction application. Work proceeds in reviewed phases; the current repository contains the completed audit, architecture scaffold, validated local-data pipeline, and Phase 4 NLP baseline with reviewed evaluation results.
 
 ## Problem statements
 
@@ -15,7 +15,12 @@ This project is being rebuilt from an exploratory notebook into a reproducible F
 - Phase 1: notebook and data audit completed in [`docs/audit_report.md`](docs/audit_report.md).
 - Phase 2: architecture and foundational scaffold completed in [`docs/architecture.md`](docs/architecture.md).
 - Phase 3: local document and VIX ingestion, validation, identity, and safe preprocessing implemented in [`docs/data_pipeline.md`](docs/data_pipeline.md).
-- Phase 4: tokenizer-safe inference, aggregation, policy baseline, topic interfaces, and evaluation scaffolding implemented in [`docs/nlp_pipeline.md`](docs/nlp_pipeline.md). A five-document GPU smoke test succeeded; manually reviewed model evaluation remains pending.
+- Phase 4: completed as a measured baseline with tokenizer-safe inference, aggregation, policy rules, topic interfaces,
+  reviewed annotations, and a reproducible evaluation command are implemented. See
+  [`docs/nlp_pipeline.md`](docs/nlp_pipeline.md) and
+  [`docs/model_evaluation.md`](docs/model_evaluation.md). Initial baseline results and
+  limitations are reported in
+  [`docs/model_evaluation_results.md`](docs/model_evaluation_results.md).
 - Quantitative analysis, LLM integration, and the Streamlit application are not implemented yet.
 
 ## Implemented structure
@@ -115,4 +120,15 @@ processed-data directory:
 ```powershell
 & "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.nlp.pipeline --config config/config.yaml --limit 5
 ```
+
+## Model evaluation
+
+After generating predictions, score the held-out reviewed annotations:
+
+```powershell
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.evaluation.pipeline --config config/config.yaml
+```
+
+The evaluation itself is lightweight and does not use the GPU. It writes metrics and
+row-level mismatches under the ignored `data/processed` directory.
 

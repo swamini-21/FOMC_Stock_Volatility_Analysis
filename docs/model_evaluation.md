@@ -1,10 +1,22 @@
-# Model evaluation plan
+# Model evaluation
 
 ## Status
 
-The evaluation machinery and annotation schema are implemented, but no gold labels
-or measured model results exist yet. This document intentionally reports no fabricated
-scores.
+The evaluation machinery, annotation schema, and reviewed Phase 4 labels are
+implemented. The versioned gold-label CSV contains seven development examples and 21
+held-out evaluation examples. The first reviewed baseline results and failure analysis
+are recorded in `docs/model_evaluation_results.md`. Phase 4 is closed with these
+results as the documented baseline; model improvement is deferred.
+
+Run the held-out evaluation with:
+
+```bash
+python -m fed_policy_intelligence.evaluation.pipeline --config config/config.yaml
+```
+
+This writes `data/processed/model_evaluation.json` and
+`data/processed/model_evaluation_errors.csv`. The command validates label values,
+document identity, prediction uniqueness, and successful NLP status before scoring.
 
 ## Sampling and splits
 
