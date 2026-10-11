@@ -52,9 +52,10 @@ class ModelSettings:
 
 @dataclass(frozen=True)
 class LlmSettings:
-    """LLM provider selection; Phase 2 uses the offline mock provider."""
+    """LLM provider and exact model selection."""
 
     provider: str
+    model: str
 
 
 @dataclass(frozen=True)
@@ -170,8 +171,11 @@ def load_settings(
         raise ConfigError("Model identifiers must not be empty.")
 
     provider = env.get("FPI_LLM_PROVIDER", str(_required(llm, "provider", "llm"))).lower()
-    if provider not in {"mock", "openai", "anthropic"}:
-        raise ConfigError("llm.provider must be one of: mock, openai, anthropic.")
+    if provider not in {"mock", "gemini", "openai", "anthropic"}:
+        raise ConfigError("llm.provider must be one of: mock, gemini, openai, anthropic.")
+    model = env.get("FPI_LLM_MODEL", str(_required(llm, "model", "llm"))).strip()
+    if not model:
+        raise ConfigError("llm.model must not be empty.")
 
     return ProjectSettings(
         name=name,
@@ -206,6 +210,6 @@ def load_settings(
                 _required(models, "batch_size", "models"), "models.batch_size"
             ),
         ),
-        llm=LlmSettings(provider=provider),
+        llm=LlmSettings(provider=provider, model=model),
     )
 

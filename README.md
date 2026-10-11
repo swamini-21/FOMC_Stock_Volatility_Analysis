@@ -31,7 +31,10 @@ This project is being rebuilt from an exploratory notebook into a reproducible F
   local RoBERTa-base classifier, which is evaluated on its untouched external test
   split and applied sentence by sentence to all 295 market-eligible statements. See
   [`docs/domain_policy_results.md`](docs/domain_policy_results.md).
-- LLM integration and the Streamlit application are not implemented yet.
+- The structured policy-intelligence contract, evidence audit, provenance, cache, and
+  Gemini live provider are implemented. The mock remains the offline default. Provider
+  evaluation and the Streamlit application remain deferred. See
+  [`docs/llm_policy_intelligence.md`](docs/llm_policy_intelligence.md).
 
 ## Implemented structure
 
@@ -52,6 +55,14 @@ src/fed_policy_intelligence/
 │   └── validation.py
 ├── evaluation/
 │   └── classification.py
+├── llm/
+│   ├── extractor.py
+│   ├── gemini.py
+│   ├── grounding.py
+│   ├── pipeline.py
+│   ├── prompt.py
+│   ├── provider.py
+│   └── schema.py
 ├── nlp/
 │   ├── chunking.py
 │   ├── emotion.py
@@ -160,6 +171,39 @@ After generating predictions, score the held-out reviewed annotations:
 
 The evaluation itself is lightweight and does not use the GPU. It writes metrics and
 row-level mismatches under the ignored `data/processed` directory.
+
+## Structured policy intelligence
+
+Run the offline structured-extraction path with the default mock provider:
+
+```powershell
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.llm.pipeline --config config/config.yaml
+```
+
+The mock validates schema, grounding, provenance, error handling, and caching. It is
+not a substitute for a live LLM or a model-quality benchmark. See
+[`docs/llm_policy_intelligence.md`](docs/llm_policy_intelligence.md).
+
+Install the Gemini SDK after creating a key in Google AI Studio:
+
+```powershell
+& "$FpiGpuEnv\Scripts\python.exe" -m pip install -e ".[dev,llm]"
+```
+
+Keep the key in the `GEMINI_API_KEY` environment variable; never place it in source
+control. Start with one statement and a separate smoke-test output:
+
+```powershell
+$env:FPI_LLM_PROVIDER = "gemini"
+$env:FPI_LLM_MODEL = "gemini-3.8-flash"
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.llm.pipeline `
+  --config config/config.yaml `
+  --limit 1 `
+  --output data/processed/gemini_policy_intelligence_smoke.jsonl
+```
+
+Inspect the record's status, evidence audit, and token-usage metadata before increasing
+the limit. The default YAML continues to use `mock`, preventing accidental API usage.
 
 ## Event construction
 

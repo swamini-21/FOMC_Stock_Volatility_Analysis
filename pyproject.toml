@@ -33,6 +33,9 @@ topic-comparison = [
 analysis = [
     "statsmodels>=0.14,<1",
 ]
+llm = [
+    "google-genai>=1,<2",
+]
 training = [
     "accelerate>=1,<2",
 ]

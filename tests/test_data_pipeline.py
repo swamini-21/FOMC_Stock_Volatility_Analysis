@@ -39,7 +39,7 @@ def test_pipeline_prepares_output_payloads(monkeypatch) -> None:
             stride=16,
             batch_size=2,
         ),
-        llm=LlmSettings(provider="mock"),
+            llm=LlmSettings(provider="mock", model="gemini-test-model"),
     )
     csv_writes: list[tuple[pd.DataFrame, Path]] = []
     json_writes: list[tuple[dict[str, object], Path]] = []

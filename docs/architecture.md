@@ -65,6 +65,7 @@ The intended package is `fed_policy_intelligence`. Only implemented modules are 
 | `analysis/events.py` | Statement-event aggregation, leakage controls, session alignment, and VIX windows | Implemented in Phase 5 |
 | `analysis/regression.py` | Frozen baseline/enhanced VIX models, robust inference, diagnostics, and sensitivity analysis | Implemented in Phase 5 |
 | `evaluation/` | Reviewed annotation schema, validation, classification metrics, and mismatch reporting | Implemented in Phase 4 |
+| `llm/` | Strict structured policy schema, mock/Gemini providers, evidence audit, provenance, usage, and cache | Gemini integration implemented; evaluation pending |
 | `app/` | Streamlit views backed by cached outputs | Deferred |
 
 This phased creation policy prevents empty modules and documentation that implies unfinished features are available.
@@ -103,7 +104,11 @@ An event links one or more documents to a documented trading session. It records
 
 ### LLM extraction record
 
-The later LLM phase will store schema version, provider/model, prompt version, source passage identity, structured fields, verbatim evidence, evidence-verification results, abstentions, errors, and generation metadata. Mock responses remain available for offline tests.
+The LLM layer stores schema version, provider/model, prompt version, source passage
+identity, structured fields, verbatim evidence, evidence-verification results,
+abstentions, errors, token usage, and generation metadata. The deterministic mock,
+cache, and Gemini provider are implemented; live-model acceptance remains deferred until
+evaluated.
 
 ## Configuration strategy
 
@@ -113,12 +118,14 @@ The later LLM phase will store schema version, provider/model, prompt version, s
 - `FPI_DEVICE`
 - `FPI_LOG_LEVEL`
 - `FPI_LLM_PROVIDER`
+- `FPI_LLM_MODEL`
+- `GEMINI_API_KEY` (secret; local environment only)
 
-The default device is `cpu` and the default LLM provider is `mock`. Colab can set `FPI_DEVICE=cuda` after GPU dependencies and compatibility are verified. Credentials are intentionally absent in Phase 2 and will be introduced only with an implemented provider integration.
+The default device is `cpu` and the default LLM provider is `mock`. Colab can set `FPI_DEVICE=cuda` after GPU dependencies and compatibility are verified. Gemini credentials are supplied only through the local `GEMINI_API_KEY` environment variable and are never stored in project configuration.
 
 ## Dependency strategy
 
-`pyproject.toml` is the single dependency source. Phase 2 introduced PyYAML and development tools; Phase 3 added pandas for the tested tabular pipeline. Phase 4 added optional scikit-learn, Transformers, and PyTorch dependencies. Phase 5 adds Statsmodels as an optional analysis dependency. PyTorch is currently constrained to `>=2.8,<2.9` because the tested Windows host encountered a reproducible `c10.dll` initialization failure with later wheels. The verified NVIDIA environment uses `torch 2.8.0+cu128`; GPU wheels must be installed from the official PyTorch index before the project extras. Streamlit, market calendars, and provider SDKs will be added only in the phase that introduces tested code using them.
+`pyproject.toml` is the single dependency source. Phase 2 introduced PyYAML and development tools; Phase 3 added pandas for the tested tabular pipeline. Phase 4 added optional scikit-learn, Transformers, and PyTorch dependencies. Phase 5 adds Statsmodels as an optional analysis dependency. The optional `llm` dependency group adds the official Google Gen AI SDK. PyTorch is currently constrained to `>=2.8,<2.9` because the tested Windows host encountered a reproducible `c10.dll` initialization failure with later wheels. The verified NVIDIA environment uses `torch 2.8.0+cu128`; GPU wheels must be installed from the official PyTorch index before the project extras. Streamlit and market calendars remain deferred.
 
 ## Local and Colab execution
 
@@ -134,7 +141,7 @@ The default device is `cpu` and the default LLM provider is `mock`. Colab can se
 3. Implement tokenizer-safe sentiment and emotion inference with cached outputs.
 4. Rebuild topic discovery and evaluation.
 5. Implement event alignment, outcomes, baseline models, and robustness checks.
-6. Implement mock-first structured policy extraction, then select a live provider.
+6. Evaluate the Gemini structured policy extraction against expert labels and grounding checks.
 7. Build the Streamlit application from cached, validated outputs.
 
 Each step adds its own modules and tests. No later layer should import notebook state or depend on a previous interactive cell execution.

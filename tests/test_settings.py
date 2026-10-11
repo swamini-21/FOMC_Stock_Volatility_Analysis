@@ -13,6 +13,7 @@ def test_default_config_loads_from_project_root() -> None:
     assert settings.name == "federal-reserve-policy-intelligence"
     assert settings.runtime.device == "cpu"
     assert settings.llm.provider == "mock"
+    assert settings.llm.model == "gemini-3.8-flash"
     assert settings.data.corpus_path == (root / "fomc_corpus.csv").resolve()
 
 
@@ -25,11 +26,13 @@ def test_environment_overrides_runtime_selections() -> None:
             "FPI_DEVICE": "auto",
             "FPI_LOG_LEVEL": "debug",
             "FPI_LLM_PROVIDER": "mock",
+            "FPI_LLM_MODEL": "gemini-test-model",
         },
     )
 
     assert settings.runtime.device == "auto"
     assert settings.runtime.log_level == "DEBUG"
+    assert settings.llm.model == "gemini-test-model"
 
 
 def test_invalid_stride_is_rejected() -> None:
