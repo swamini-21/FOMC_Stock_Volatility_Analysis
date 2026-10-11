@@ -20,6 +20,7 @@ dev = [
     "ruff>=0.9,<1",
 ]
 nlp = [
+    "datasets>=3,<5",
     "scikit-learn>=1.5,<2",
     # PyTorch 2.9+ currently fails to initialize c10.dll on the tested Windows host.
     "torch>=2.8,<2.9",
@@ -28,6 +29,12 @@ nlp = [
 topic-comparison = [
     "bertopic>=0.17,<1",
     "umap-learn>=0.5,<1",
+]
+analysis = [
+    "statsmodels>=0.14,<1",
+]
+training = [
+    "accelerate>=1,<2",
 ]
 
 [tool.setuptools.packages.find]

@@ -132,3 +132,9 @@ def test_paragraph_and_document_aggregation_are_both_available() -> None:
     assert paragraph.aggregation == "paragraph_mean"
     assert document.aggregation == "document_length_weighted"
     assert paragraph.probabilities != document.probabilities
+
+
+def test_predict_many_preserves_text_order() -> None:
+    results = _classifier().predict_many(["positive words", "negative words", "ordinary"])
+
+    assert [result.label for result in results] == ["positive", "negative", "neutral"]

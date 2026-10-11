@@ -59,9 +59,11 @@ The intended package is `fed_policy_intelligence`. Only implemented modules are 
 | `nlp/sentiment.py` | FinBERT inference with full probabilities and metadata | Implemented and evaluated as a Phase 4 baseline |
 | `nlp/emotion.py` | Emotion inference with its paired tokenizer and complete label space | Implemented; neutral-only evaluation coverage is documented |
 | `nlp/topics.py` | LDA baseline and optional embedding-model comparison | Implemented; corpus comparison pending |
-| `nlp/policy.py` | Transparent policy-stance baseline with abstention | Implemented in Phase 4; LLM deferred |
-| `analysis/events.py` | Announcement-to-session alignment and event windows | Deferred |
-| `analysis/regression.py` | Explicit baseline/enhanced models and diagnostics | Deferred |
+| `nlp/policy.py` | Transparent policy-stance baseline with abstention | Implemented in Phase 4 as the historical baseline |
+| `nlp/train_policy.py` | Reproducible RoBERTa-base fine-tuning on pinned expert FOMC labels | Implemented and externally evaluated |
+| `nlp/document_policy.py` | Sentence-level domain inference and document aggregation | Implemented for all market-eligible statements |
+| `analysis/events.py` | Statement-event aggregation, leakage controls, session alignment, and VIX windows | Implemented in Phase 5 |
+| `analysis/regression.py` | Frozen baseline/enhanced VIX models, robust inference, diagnostics, and sensitivity analysis | Implemented in Phase 5 |
 | `evaluation/` | Reviewed annotation schema, validation, classification metrics, and mismatch reporting | Implemented in Phase 4 |
 | `app/` | Streamlit views backed by cached outputs | Deferred |
 
@@ -116,7 +118,7 @@ The default device is `cpu` and the default LLM provider is `mock`. Colab can se
 
 ## Dependency strategy
 
-`pyproject.toml` is the single dependency source. Phase 2 introduced PyYAML and development tools; Phase 3 added pandas for the tested tabular pipeline. Phase 4 added optional scikit-learn, Transformers, and PyTorch dependencies. PyTorch is currently constrained to `>=2.8,<2.9` because the tested Windows host encountered a reproducible `c10.dll` initialization failure with later wheels. The verified NVIDIA environment uses `torch 2.8.0+cu128`; GPU wheels must be installed from the official PyTorch index before the project extras. Statsmodels, Streamlit, market calendars, and provider SDKs will be added only in the phase that introduces tested code using them.
+`pyproject.toml` is the single dependency source. Phase 2 introduced PyYAML and development tools; Phase 3 added pandas for the tested tabular pipeline. Phase 4 added optional scikit-learn, Transformers, and PyTorch dependencies. Phase 5 adds Statsmodels as an optional analysis dependency. PyTorch is currently constrained to `>=2.8,<2.9` because the tested Windows host encountered a reproducible `c10.dll` initialization failure with later wheels. The verified NVIDIA environment uses `torch 2.8.0+cu128`; GPU wheels must be installed from the official PyTorch index before the project extras. Streamlit, market calendars, and provider SDKs will be added only in the phase that introduces tested code using them.
 
 ## Local and Colab execution
 

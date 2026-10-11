@@ -15,13 +15,23 @@ This project is being rebuilt from an exploratory notebook into a reproducible F
 - Phase 1: notebook and data audit completed in [`docs/audit_report.md`](docs/audit_report.md).
 - Phase 2: architecture and foundational scaffold completed in [`docs/architecture.md`](docs/architecture.md).
 - Phase 3: local document and VIX ingestion, validation, identity, and safe preprocessing implemented in [`docs/data_pipeline.md`](docs/data_pipeline.md).
-- Phase 4: completed as a measured baseline with tokenizer-safe inference, aggregation, policy rules, topic interfaces,
-  reviewed annotations, and a reproducible evaluation command are implemented. See
+- Phase 4: completed as a measured baseline with tokenizer-safe inference, aggregation,
+  policy rules, topic interfaces, reviewed annotations, and a reproducible evaluation
+  command. See
   [`docs/nlp_pipeline.md`](docs/nlp_pipeline.md) and
   [`docs/model_evaluation.md`](docs/model_evaluation.md). Initial baseline results and
   limitations are reported in
   [`docs/model_evaluation_results.md`](docs/model_evaluation_results.md).
-- Quantitative analysis, LLM integration, and the Streamlit application are not implemented yet.
+- Phase 5: statement-only event construction and conservative 1-day and 5-day VIX
+  outcomes are implemented in [`docs/event_study.md`](docs/event_study.md). Frozen
+  baseline and NLP-enhanced regressions are reported in
+  [`docs/regression_analysis.md`](docs/regression_analysis.md); the apparent 5-day NLP
+  association is not robust to excluding the 2007–2009 crisis period.
+- Expert-supervised policy stance: the pinned Georgia Tech FOMC dataset now trains a
+  local RoBERTa-base classifier, which is evaluated on its untouched external test
+  split and applied sentence by sentence to all 295 market-eligible statements. See
+  [`docs/domain_policy_results.md`](docs/domain_policy_results.md).
+- LLM integration and the Streamlit application are not implemented yet.
 
 ## Implemented structure
 
@@ -31,6 +41,9 @@ docs/audit_report.md
 docs/architecture.md
 src/fed_policy_intelligence/
 ├── __init__.py
+├── analysis/
+│   ├── events.py
+│   └── regression.py
 ├── data/
 │   ├── identity.py
 │   ├── ingestion.py
@@ -74,6 +87,22 @@ Install the optional real-model dependencies only when running transformer infer
 
 ```bash
 python -m pip install -e ".[dev,nlp]"
+```
+
+Validate and summarize the external expert-labelled policy-stance dataset without
+committing a local copy:
+
+```powershell
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.data.expert_labels
+```
+
+The planned domain-classifier path and dataset contract are documented in
+[`docs/expert_fomc_dataset.md`](docs/expert_fomc_dataset.md).
+
+Install the optional statistical-analysis dependency for Phase 5:
+
+```bash
+python -m pip install -e ".[analysis]"
 ```
 
 ### Windows NVIDIA GPU setup
@@ -131,4 +160,22 @@ After generating predictions, score the held-out reviewed annotations:
 
 The evaluation itself is lightweight and does not use the GPU. It writes metrics and
 row-level mismatches under the ignored `data/processed` directory.
+
+## Event construction
+
+Build statement-level events and forward VIX outcomes from existing processed data:
+
+```powershell
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.analysis.events --config config/config.yaml
+```
+
+Publication times are unavailable, so the builder uses the first usable VIX session
+strictly after each statement date. Transcripts are excluded to prevent look-ahead
+leakage from their later public release.
+
+Estimate the frozen baseline and NLP-enhanced models:
+
+```powershell
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.analysis.regression --config config/config.yaml
+```
 

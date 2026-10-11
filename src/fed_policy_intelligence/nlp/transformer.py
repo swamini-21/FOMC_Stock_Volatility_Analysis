@@ -172,6 +172,79 @@ class TransformerTextClassifier:
             device=self.backend.device,
         )
 
+    def predict_many(
+        self,
+        texts: Sequence[str],
+        *,
+        aggregation: str = "document_length_weighted",
+    ) -> list[ClassificationPrediction]:
+        """Classify multiple independent texts in shared backend batches."""
+
+        if not texts:
+            return []
+        grouped_chunks = [self._chunk_groups(text, aggregation) for text in texts]
+        flattened = [
+            chunk
+            for text_groups in grouped_chunks
+            for group in text_groups
+            for chunk in group
+        ]
+        logits = self.backend.predict_logits(
+            [chunk.input_ids for chunk in flattened], batch_size=self.batch_size
+        )
+        if len(logits) != len(flattened):
+            raise PredictionError("The backend returned a different number of rows than chunks.")
+        all_probabilities = [softmax(row) for row in logits]
+        if any(len(row) != len(self.backend.labels) for row in all_probabilities):
+            raise PredictionError("The backend output dimension does not match its labels.")
+
+        results: list[ClassificationPrediction] = []
+        offset = 0
+        for text_groups in grouped_chunks:
+            chunks = [chunk for group in text_groups for chunk in group]
+            probabilities = all_probabilities[offset : offset + len(chunks)]
+            offset += len(chunks)
+            if aggregation == "paragraph_mean":
+                paragraph_probabilities: list[np.ndarray] = []
+                paragraph_offset = 0
+                for group in text_groups:
+                    group_probabilities = probabilities[
+                        paragraph_offset : paragraph_offset + len(group)
+                    ]
+                    paragraph_probabilities.append(
+                        aggregate_probabilities(
+                            group_probabilities,
+                            weights=[chunk.content_token_count for chunk in group],
+                        )
+                    )
+                    paragraph_offset += len(group)
+                combined = aggregate_probabilities(paragraph_probabilities)
+            else:
+                weights = (
+                    [chunk.content_token_count for chunk in chunks]
+                    if aggregation == "document_length_weighted"
+                    else None
+                )
+                combined = aggregate_probabilities(probabilities, weights=weights)
+            distribution = {
+                label.casefold(): float(combined[index])
+                for index, label in enumerate(self.backend.labels)
+            }
+            winning_label = max(distribution, key=distribution.get)  # type: ignore[arg-type]
+            results.append(
+                ClassificationPrediction(
+                    label=winning_label,
+                    probabilities=distribution,
+                    chunk_count=len(chunks),
+                    token_count=sum(chunk.content_token_count for chunk in chunks),
+                    aggregation=aggregation,
+                    model_id=self.backend.model_id,
+                    tokenizer_id=self.backend.tokenizer_id,
+                    device=self.backend.device,
+                )
+            )
+        return results
+
 
 class HuggingFaceLogitBackend:
     """Lazy PyTorch backend; importing core NLP modules does not require transformers."""
@@ -215,6 +288,7 @@ def load_huggingface_classifier(
     batch_size: int,
     device: str = "cpu",
     revision: str | None = None,
+    cache_dir: str | None = None,
 ) -> TransformerTextClassifier:
     """Load a tokenizer and model from the exact same Hugging Face checkpoint."""
 
@@ -232,8 +306,12 @@ def load_huggingface_classifier(
     if selected_device == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested but PyTorch cannot access a CUDA device.")
 
-    tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
-    model = AutoModelForSequenceClassification.from_pretrained(model_id, revision=revision)
+    tokenizer = AutoTokenizer.from_pretrained(
+        model_id, revision=revision, cache_dir=cache_dir
+    )
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_id, revision=revision, cache_dir=cache_dir
+    )
     model.to(selected_device)
     backend = HuggingFaceLogitBackend(
         model=model,
