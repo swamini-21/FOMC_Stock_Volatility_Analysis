@@ -13,7 +13,7 @@ def test_default_config_loads_from_project_root() -> None:
     assert settings.name == "federal-reserve-policy-intelligence"
     assert settings.runtime.device == "cpu"
     assert settings.llm.provider == "mock"
-    assert settings.llm.model == "gemini-3.8-flash"
+    assert settings.llm.model == "gemini-3.5-flash-lite"
     assert settings.data.corpus_path == (root / "fomc_corpus.csv").resolve()
 
 

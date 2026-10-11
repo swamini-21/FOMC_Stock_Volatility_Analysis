@@ -79,4 +79,4 @@ def test_gemini_provider_retries_bounded_failures() -> None:
 
     assert output.result["policy_stance"] == "hawkish"
     assert len(models.calls) == 2
-    assert delays == [1]
+    assert delays == [5]

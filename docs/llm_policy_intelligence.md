@@ -64,7 +64,7 @@ The versioned YAML defaults to `mock`. Enable Gemini only for an intentional run
 
 ```powershell
 $env:FPI_LLM_PROVIDER = "gemini"
-$env:FPI_LLM_MODEL = "gemini-3.8-flash"
+$env:FPI_LLM_MODEL = "gemini-3.5-flash-lite"
 & "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.llm.pipeline `
   --config config/config.yaml `
   --limit 1 `
@@ -75,3 +75,7 @@ The live-provider evaluation must report schema-validity rate, stance macro-F1 a
 the expert FOMC labels, evidence-support rate, unsupported-claim frequency, abstention
 behavior, token usage, and qualitative failure cases. OpenAI and Anthropic remain
 accepted configuration names but fail clearly because their adapters are not implemented.
+
+The first bounded Gemini evaluation is reported in
+[`gemini_bounded_evaluation.md`](gemini_bounded_evaluation.md). Low expert-sentence
+coverage and document quote-grounding failures currently block a full-corpus run.

@@ -25,6 +25,7 @@ class GeminiPolicyProvider:
         client: Any | None = None,
         max_attempts: int = 3,
         timeout_seconds: float = 90.0,
+        retry_backoff_seconds: float = 5.0,
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         if not model_id.strip():
@@ -33,8 +34,11 @@ class GeminiPolicyProvider:
             raise ValueError("max_attempts must be positive.")
         if timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive.")
+        if retry_backoff_seconds < 0:
+            raise ValueError("retry_backoff_seconds must not be negative.")
         self.model_id = model_id.strip()
         self.max_attempts = max_attempts
+        self.retry_backoff_seconds = retry_backoff_seconds
         self._sleep = sleep
         if client is not None:
             self._client = client
@@ -93,7 +97,7 @@ class GeminiPolicyProvider:
             except Exception as exc:
                 last_error = exc
                 if attempt < self.max_attempts:
-                    self._sleep(min(2 ** (attempt - 1), 4))
+                    self._sleep(min(self.retry_backoff_seconds * 2 ** (attempt - 1), 30))
         raise RuntimeError(
             f"Gemini extraction failed after {self.max_attempts} attempts: {last_error}"
         ) from last_error

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -43,7 +44,11 @@ def run_extraction(
     *,
     extractor: PolicyIntelligenceExtractor,
     cache_path: Path,
+    checkpoint_every: int | None = None,
+    progress: Callable[[int, int, dict[str, Any], bool], None] | None = None,
 ) -> tuple[list[dict[str, Any]], int]:
+    if checkpoint_every is not None and checkpoint_every < 1:
+        raise ValueError("checkpoint_every must be positive when provided.")
     required = {"document_id", "cleaned_text"}
     missing = sorted(required - set(documents.columns))
     if missing:
@@ -51,7 +56,8 @@ def run_extraction(
     cache = _load_cache(cache_path)
     records: list[dict[str, Any]] = []
     reused = 0
-    for row in documents.itertuples(index=False):
+    total = len(documents)
+    for position, row in enumerate(documents.itertuples(index=False), start=1):
         document_id = str(row.document_id)
         source_text = str(row.cleaned_text)
         source_hash = hashlib.sha256(source_text.encode("utf-8")).hexdigest()
@@ -70,10 +76,18 @@ def run_extraction(
         ):
             records.append(cached)
             reused += 1
+            was_reused = True
         else:
             records.append(
                 extractor.extract(document_id=document_id, source_text=source_text).to_dict()
             )
+            was_reused = False
+        if checkpoint_every is not None and (
+            position % checkpoint_every == 0 or position == total
+        ):
+            _write_jsonl_atomic(records, cache_path)
+        if progress is not None:
+            progress(position, total, records[-1], was_reused)
     return records, reused
 
 

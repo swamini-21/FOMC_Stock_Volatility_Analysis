@@ -33,8 +33,10 @@ This project is being rebuilt from an exploratory notebook into a reproducible F
   [`docs/domain_policy_results.md`](docs/domain_policy_results.md).
 - The structured policy-intelligence contract, evidence audit, provenance, cache, and
   Gemini live provider are implemented. The mock remains the offline default. Provider
-  evaluation and the Streamlit application remain deferred. See
-  [`docs/llm_policy_intelligence.md`](docs/llm_policy_intelligence.md).
+  evaluation found that Gemini should remain an experimental enrichment layer rather
+  than replace the local stance classifier. See
+  [`docs/llm_policy_intelligence.md`](docs/llm_policy_intelligence.md) and
+  [`docs/gemini_bounded_evaluation.md`](docs/gemini_bounded_evaluation.md).
 
 ## Implemented structure
 
@@ -195,7 +197,7 @@ control. Start with one statement and a separate smoke-test output:
 
 ```powershell
 $env:FPI_LLM_PROVIDER = "gemini"
-$env:FPI_LLM_MODEL = "gemini-3.8-flash"
+$env:FPI_LLM_MODEL = "gemini-3.5-flash-lite"
 & "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.llm.pipeline `
   --config config/config.yaml `
   --limit 1 `
