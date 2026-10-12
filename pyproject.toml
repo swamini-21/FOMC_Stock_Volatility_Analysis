@@ -31,7 +31,11 @@ topic-comparison = [
     "umap-learn>=0.5,<1",
 ]
 analysis = [
+    "scipy>=1.13,<2",
     "statsmodels>=0.14,<1",
+]
+market-data = [
+    "yfinance>=0.2,<1",
 ]
 llm = [
     "google-genai>=1,<2",

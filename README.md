@@ -6,7 +6,9 @@ This project is being rebuilt from an exploratory notebook into a reproducible F
 
 1. **Reliable policy-signal extraction:** How can we build a reproducible NLP pipeline that preserves distinct Federal Reserve documents and reliably extracts sentiment, emotion, policy stance, and topics from long-form communications?
 
-2. **Incremental market-reaction analysis:** Do language-derived features from Federal Reserve communications provide incremental explanatory or predictive value for subsequent VIX changes or equity returns beyond conventional market variables?
+2. **Incremental market-reaction analysis:** Are language-derived features from
+   Federal Reserve communications associated with subsequent VIX changes beyond
+   conventional market variables?
 
 3. **Grounded policy intelligence:** Can an LLM extract structured, evidence-backed policy signals—such as hawkish or dovish stance, inflation outlook, labor-market outlook, and key risks—more reliably and interpretably than transparent transformer or rule-based baselines?
 
@@ -27,6 +29,16 @@ This project is being rebuilt from an exploratory notebook into a reproducible F
   baseline and NLP-enhanced regressions are reported in
   [`docs/regression_analysis.md`](docs/regression_analysis.md); the apparent 5-day NLP
   association is not robust to excluding the 2007–2009 crisis period.
+- The current research specification replaces the broad NLP block with a prespecified
+  hierarchy: market controls, expert-supervised FOMC stance, secondary sentiment, and
+  exploratory fear. It adds descriptive tests, rank and linear correlations,
+  stance-group comparisons, robust inference, Holm correction, influence diagnostics,
+  and crisis sensitivity. Results are associations rather than predictions or causal
+  effects. See [`docs/research_analysis.md`](docs/research_analysis.md).
+- Reproducible S&P 500 and Treasury-yield downloads now extend the study beyond VIX.
+  The richer controls attenuate the earlier one-day VIX result, and no stance,
+  sentiment, or emotion block survives multiplicity correction and crisis exclusion.
+  See [`docs/market_data.md`](docs/market_data.md).
 - Expert-supervised policy stance: the pinned Georgia Tech FOMC dataset now trains a
   local RoBERTa-base classifier, which is evaluated on its untouched external test
   split and applied sentence by sentence to all 295 market-eligible statements. See
@@ -48,7 +60,9 @@ src/fed_policy_intelligence/
 ├── __init__.py
 ├── analysis/
 │   ├── events.py
-│   └── regression.py
+│   ├── market_data.py
+│   ├── regression.py
+│   └── research.py
 ├── data/
 │   ├── identity.py
 │   ├── ingestion.py
@@ -116,6 +130,12 @@ Install the optional statistical-analysis dependency for Phase 5:
 
 ```bash
 python -m pip install -e ".[analysis]"
+```
+
+Install the optional downloader dependency for S&P 500 data:
+
+```bash
+python -m pip install -e ".[market-data]"
 ```
 
 ### Windows NVIDIA GPU setup
@@ -209,6 +229,17 @@ the limit. The default YAML continues to use `mock`, preventing accidental API u
 
 ## Event construction
 
+Download and validate the additional market series:
+
+```powershell
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.analysis.market_data `
+  --config config/config.yaml `
+  --start 1993-01-01
+```
+
+This writes ignored raw and processed data plus a provenance report. See
+[`docs/market_data.md`](docs/market_data.md).
+
 Build statement-level events and forward VIX outcomes from existing processed data:
 
 ```powershell
@@ -224,4 +255,15 @@ Estimate the frozen baseline and NLP-enhanced models:
 ```powershell
 & "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.analysis.regression --config config/config.yaml
 ```
+
+Run the current explanatory research specification:
+
+```powershell
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.analysis.research --config config/config.yaml
+```
+
+This produces descriptive statistics, correlations, nested robust regressions,
+multiple-testing corrections, diagnostics, and a 2007–2009 exclusion sensitivity
+analysis. See [`docs/research_analysis.md`](docs/research_analysis.md) for the design
+and current findings.
 

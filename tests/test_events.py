@@ -222,3 +222,78 @@ def test_build_event_dataset_retains_events_without_market_coverage() -> None:
     assert len(events) == 1
     assert not bool(events.loc[0, "is_usable_1d"])
     assert events.loc[0, "exclusion_reason"] == "no_prior_usable_vix"
+
+
+def test_build_event_dataset_aligns_external_market_outcomes() -> None:
+    documents = pd.DataFrame(
+        [
+            {
+                "document_id": "statement",
+                "publication_date": "2024-01-05",
+                "document_type": "statement",
+                "timing_precision": "date",
+            }
+        ]
+    )
+    predictions = pd.DataFrame(
+        [
+            {
+                "document_id": "statement",
+                "nlp_status": "success",
+                "sentiment_score": 0.0,
+                "sentiment_probabilities": _probabilities(
+                    {"negative": 0.1, "neutral": 0.8, "positive": 0.1}
+                ),
+                "emotion_probabilities": _probabilities(
+                    {
+                        "anger": 0.0,
+                        "disgust": 0.0,
+                        "fear": 0.0,
+                        "joy": 0.0,
+                        "neutral": 1.0,
+                        "sadness": 0.0,
+                        "surprise": 0.0,
+                    }
+                ),
+                "policy_stance": "neutral_or_mixed",
+            }
+        ]
+    )
+    dates = pd.to_datetime(
+        [
+            "2023-12-27",
+            "2023-12-28",
+            "2023-12-29",
+            "2024-01-02",
+            "2024-01-03",
+            "2024-01-04",
+            "2024-01-08",
+            "2024-01-09",
+            "2024-01-10",
+            "2024-01-11",
+            "2024-01-12",
+        ]
+    )
+    vix = pd.DataFrame(
+        {"trading_date": dates, "value": range(10, 21), "is_usable": True}
+    )
+    controls = pd.DataFrame(
+        {
+            "trading_date": dates,
+            "sp500_close": [100, 101, 102, 103, 104, 105, 107, 108, 109, 110, 111],
+            "dgs2": [4.00, 4.01, 4.02, 4.03, 4.04, 4.05, 4.07, 4.08, 4.09, 4.10, 4.11],
+            "dgs10": [3.80, 3.81, 3.82, 3.83, 3.84, 3.85, 3.86, 3.87, 3.88, 3.89, 3.90],
+        }
+    )
+
+    events, report = build_event_dataset(
+        documents, predictions, vix, market_controls=controls
+    )
+
+    event = events.iloc[0]
+    assert event["sp500_return_1d"] == pytest.approx(107 / 105 - 1)
+    assert event["sp500_return_5d"] == pytest.approx(111 / 105 - 1)
+    assert event["dgs2_basis_points_1d"] == pytest.approx(2.0)
+    assert event["dgs10_basis_points_5d"] == pytest.approx(5.0)
+    assert event["pre_event_sp500_return_5d"] == pytest.approx(105 / 100 - 1)
+    assert report["external_market_controls_included"] is True

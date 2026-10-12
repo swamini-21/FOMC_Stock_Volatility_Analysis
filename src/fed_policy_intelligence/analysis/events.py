@@ -20,6 +20,11 @@ DOMAIN_POLICY_FEATURES = (
     "domain_policy_net_stance",
     "domain_policy_mean_confidence",
 )
+EXTERNAL_MARKET_SERIES = {
+    "sp500": ("sp500_close", "return"),
+    "dgs2": ("dgs2", "basis_points"),
+    "dgs10": ("dgs10", "basis_points"),
+}
 
 
 def _require_columns(frame: pd.DataFrame, required: set[str], source: str) -> None:
@@ -254,12 +259,79 @@ def _align_market_outcomes(
     return pd.DataFrame.from_records(records)
 
 
+def _prepare_external_markets(market_controls: pd.DataFrame) -> pd.DataFrame:
+    required = {"trading_date", *(spec[0] for spec in EXTERNAL_MARKET_SERIES.values())}
+    _require_columns(market_controls, required, "External market data")
+    prepared = market_controls.copy()
+    prepared["trading_date"] = pd.to_datetime(
+        prepared["trading_date"], errors="coerce"
+    ).dt.normalize()
+    for value_column, _ in EXTERNAL_MARKET_SERIES.values():
+        prepared[value_column] = pd.to_numeric(prepared[value_column], errors="coerce")
+    prepared = prepared.dropna(subset=["trading_date"]).sort_values("trading_date")
+    if prepared["trading_date"].duplicated().any():
+        raise ValueError("External market data contains duplicate dates.")
+    return prepared.reset_index(drop=True)
+
+
+def _change(current: float, reference: float, change_type: str) -> float:
+    if change_type == "return":
+        return (current / reference) - 1.0
+    return (current - reference) * 100.0
+
+
+def _align_external_markets(
+    events: pd.DataFrame, market_controls: pd.DataFrame, horizons: tuple[int, ...]
+) -> pd.DataFrame:
+    aligned = events.copy()
+    for prefix, (value_column, change_type) in EXTERNAL_MARKET_SERIES.items():
+        series = market_controls[["trading_date", value_column]].dropna().reset_index(drop=True)
+        if series.empty:
+            raise ValueError(f"External market series {value_column} contains no observations.")
+        dates = series["trading_date"]
+        values = series[value_column]
+        for row_index, event_date in aligned["event_date"].items():
+            event_date = pd.Timestamp(event_date)
+            prior_position = int(dates.searchsorted(event_date, side="left")) - 1
+            first_after = int(dates.searchsorted(event_date, side="right"))
+            if prior_position < 0:
+                continue
+            pre_value = float(values.iloc[prior_position])
+            aligned.loc[row_index, f"pre_event_{prefix}_date"] = dates.iloc[prior_position]
+            aligned.loc[row_index, f"pre_event_{prefix}"] = pre_value
+            for lookback in (1, 5):
+                history_position = prior_position - lookback
+                if history_position >= 0:
+                    aligned.loc[row_index, f"pre_event_{prefix}_{change_type}_{lookback}d"] = (
+                        _change(pre_value, float(values.iloc[history_position]), change_type)
+                    )
+            for horizon in horizons:
+                outcome_position = first_after + horizon - 1
+                usable = outcome_position < len(series)
+                aligned.loc[row_index, f"is_usable_{prefix}_{horizon}d"] = usable
+                if not usable:
+                    continue
+                post_value = float(values.iloc[outcome_position])
+                aligned.loc[row_index, f"post_{prefix}_{horizon}d_date"] = dates.iloc[
+                    outcome_position
+                ]
+                aligned.loc[row_index, f"post_{prefix}_{horizon}d"] = post_value
+                aligned.loc[row_index, f"{prefix}_{change_type}_{horizon}d"] = _change(
+                    post_value, pre_value, change_type
+                )
+        for horizon in horizons:
+            usable_column = f"is_usable_{prefix}_{horizon}d"
+            aligned[usable_column] = aligned[usable_column].eq(True)
+    return aligned
+
+
 def build_event_dataset(
     documents: pd.DataFrame,
     predictions: pd.DataFrame,
     vix: pd.DataFrame,
     *,
     domain_policy: pd.DataFrame | None = None,
+    market_controls: pd.DataFrame | None = None,
     horizons: tuple[int, ...] = (1, 5),
     eligible_document_types: tuple[str, ...] = ("statement",),
 ) -> tuple[pd.DataFrame, dict[str, object]]:
@@ -297,6 +369,10 @@ def build_event_dataset(
     events = _aggregate_events(eligible)
     market = _prepare_market(vix)
     aligned = _align_market_outcomes(events, market, selected_horizons)
+    prepared_external = None
+    if market_controls is not None:
+        prepared_external = _prepare_external_markets(market_controls)
+        aligned = _align_external_markets(aligned, prepared_external, selected_horizons)
     report = {
         "input_documents": len(documents),
         "input_predictions": len(predictions),
@@ -304,6 +380,7 @@ def build_event_dataset(
         "eligible_documents": len(eligible),
         "excluded_documents": len(prepared_documents) - len(eligible),
         "domain_policy_included": domain_policy is not None,
+        "external_market_controls_included": market_controls is not None,
         "event_dates": len(aligned),
         "multi_document_events": int(aligned["document_count"].gt(1).sum()),
         "usable_vix_observations": len(market),
@@ -317,6 +394,19 @@ def build_event_dataset(
             for horizon in selected_horizons
         },
     }
+    if prepared_external is not None:
+        report["external_market_observations"] = {
+            prefix: int(prepared_external[value_column].notna().sum())
+            for prefix, (value_column, _) in EXTERNAL_MARKET_SERIES.items()
+        }
+        report["external_market_horizons"] = {
+            f"{prefix}_{horizon}d": {
+                "usable_events": int(aligned[f"is_usable_{prefix}_{horizon}d"].sum()),
+                "excluded_events": int((~aligned[f"is_usable_{prefix}_{horizon}d"]).sum()),
+            }
+            for prefix in EXTERNAL_MARKET_SERIES
+            for horizon in selected_horizons
+        }
     return aligned, report
 
 
@@ -346,11 +436,15 @@ def run_event_pipeline(settings: ProjectSettings) -> dict[str, Path]:
         if not required.is_file():
             raise FileNotFoundError(f"Required processed input not found: {required}")
 
+    market_controls_path = processed / "market_controls.csv"
     events, report = build_event_dataset(
         pd.read_csv(document_path),
         pd.read_csv(prediction_path),
         pd.read_csv(vix_path),
         domain_policy=pd.read_csv(domain_policy_path),
+        market_controls=(
+            pd.read_csv(market_controls_path) if market_controls_path.is_file() else None
+        ),
     )
     event_path = processed / "fed_vix_events.csv"
     report_path = processed / "event_construction_report.json"
