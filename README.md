@@ -1,6 +1,9 @@
 # FOMC Stock Market Volatility Analysis
 
-This project is being rebuilt from an exploratory notebook into a reproducible Federal Reserve policy-intelligence and market-reaction application. Work proceeds in reviewed phases; the current repository contains the completed audit, architecture scaffold, validated local-data pipeline, and Phase 4 NLP baseline with reviewed evaluation results.
+This repository is a completed, reproducible observational research system for
+Federal Reserve policy communication and cross-market reactions. It combines validated
+document processing, expert-supervised policy-stance measurement, conservative event
+alignment, robust explanatory statistics, and a cached-output Streamlit explorer.
 
 ## Problem statements
 
@@ -24,11 +27,12 @@ This project is being rebuilt from an exploratory notebook into a reproducible F
   [`docs/model_evaluation.md`](docs/model_evaluation.md). Initial baseline results and
   limitations are reported in
   [`docs/model_evaluation_results.md`](docs/model_evaluation_results.md).
-- Phase 5: statement-only event construction and conservative 1-day and 5-day VIX
-  outcomes are implemented in [`docs/event_study.md`](docs/event_study.md). Frozen
-  baseline and NLP-enhanced regressions are reported in
-  [`docs/regression_analysis.md`](docs/regression_analysis.md); the apparent 5-day NLP
-  association is not robust to excluding the 2007–2009 crisis period.
+- Phase 5: the expert-labelled domain-classifier path and structured LLM layer are
+  complete. Gemini remains experimental after bounded evaluation; the local
+  expert-supervised classifier is the primary stance measure.
+- Phase 6: statement-only event construction, S&P 500 and Treasury extensions, and
+  the final explanatory statistical workflow are complete. No language block survives
+  multiplicity correction and crisis exclusion.
 - The current research specification replaces the broad NLP block with a prespecified
   hierarchy: market controls, expert-supervised FOMC stance, secondary sentiment, and
   exploratory fear. It adds descriptive tests, rank and linear correlations,
@@ -43,6 +47,12 @@ This project is being rebuilt from an exploratory notebook into a reproducible F
   policy trends, cross-market reactions, robust regression results, and limitations
   without API access or predictive claims. See
   [`docs/streamlit_app.md`](docs/streamlit_app.md).
+- Phase 8: 80 automated tests cover the research modules, cache failure modes, and all
+  dashboard views.
+- Phase 9: consolidated methodology, clean-environment verification, exact runbook,
+  and repository/security review are complete. See
+  [`docs/methodology.md`](docs/methodology.md) and
+  [`docs/final_implementation_report.md`](docs/final_implementation_report.md).
 - Expert-supervised policy stance: the pinned Georgia Tech FOMC dataset now trains a
   local RoBERTa-base classifier, which is evaluated on its untouched external test
   split and applied sentence by sentence to all 295 market-eligible statements. See
@@ -53,6 +63,23 @@ This project is being rebuilt from an exploratory notebook into a reproducible F
   than replace the local stance classifier. See
   [`docs/llm_policy_intelligence.md`](docs/llm_policy_intelligence.md) and
   [`docs/gemini_bounded_evaluation.md`](docs/gemini_bounded_evaluation.md).
+
+## System data flow
+
+```mermaid
+flowchart LR
+    A[Local FOMC corpus] --> B[Validation, identity, cleaning]
+    C[Expert FOMC labels] --> D[Fine-tuned RoBERTa stance model]
+    B --> E[Sentence and document NLP features]
+    D --> E
+    F[VIX, S&P 500, Treasury yields] --> G[Conservative event alignment]
+    E --> G
+    G --> H[Robust explanatory analysis]
+    B --> I[Versioned cached outputs]
+    E --> I
+    H --> I
+    I --> J[Streamlit research explorer]
+```
 
 ## Implemented structure
 
@@ -116,6 +143,9 @@ python -m pytest
 ```
 
 The default configuration uses CPU execution and a mock LLM provider. The original notebook and local datasets remain unchanged.
+
+The `dev` extra includes the lightweight topic-model dependency needed by the complete
+test suite. It does not install PyTorch or Transformers.
 
 Install the optional real-model dependencies only when running transformer inference:
 
@@ -185,6 +215,46 @@ Run validation and create ignored local processed outputs:
 ```bash
 python -m fed_policy_intelligence.data.pipeline --config config/config.yaml
 ```
+
+## Full reproduction order
+
+The commands below regenerate the final research path. Use the short-path GPU
+environment from the preceding section for transformer training and inference. Market
+downloads require internet access; the expert dataset and model base weights are
+cached after their first use.
+
+```powershell
+# 0. Install every extra used by the primary research path. On Windows GPU systems,
+#    install the tested CUDA PyTorch wheel first as shown above.
+& "$FpiGpuEnv\Scripts\python.exe" -m pip install -e ".[dev,nlp,training,analysis,market-data,app]"
+
+# 1. Validate and normalize the existing local corpus and VIX series.
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.data.pipeline --config config/config.yaml
+
+# 2. Inspect the pinned expert-labelled dataset, fine-tune, and evaluate once on its
+#    untouched published test split.
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.data.expert_labels
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.nlp.train_policy
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.evaluation.expert_policy --device auto
+
+# 3. Create general NLP features and expert-supervised statement stance shares.
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.nlp.pipeline --config config/config.yaml
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.nlp.document_policy --device auto --document-type statement
+
+# 4. Refresh market series and construct strictly post-date event outcomes.
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.analysis.market_data --config config/config.yaml --start 1993-01-01
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.analysis.events --config config/config.yaml
+
+# 5. Produce the final descriptive, regression, diagnostic, and sensitivity outputs.
+& "$FpiGpuEnv\Scripts\python.exe" -m fed_policy_intelligence.analysis.research --config config/config.yaml
+
+# 6. Explore the cached results without model or API calls.
+& "$FpiGpuEnv\Scripts\python.exe" -m streamlit run src/fed_policy_intelligence/app/streamlit_app.py
+```
+
+The historical rule-baseline evaluation, frozen earlier VIX regression, and mock/LLM
+commands remain available below for auditability; they are not required to recreate
+the final primary findings.
 
 ## NLP pipeline
 

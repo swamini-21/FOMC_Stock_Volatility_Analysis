@@ -4,7 +4,10 @@
 
 The project will turn the audited notebook into a reproducible research pipeline and an interactive policy-intelligence application. The architecture keeps source acquisition, validation, NLP inference, event construction, statistical analysis, and presentation separate so each result can be traced to inputs and configuration.
 
-Phase 2 creates only the shared foundations required by later phases: package metadata, validated settings, structured logging, environment defaults, and tests for those components. It does not claim that the data, NLP, analysis, LLM, or application layers are implemented.
+Phase 2 created the shared foundations required by later phases: package metadata,
+validated settings, structured logging, environment defaults, and tests. The status
+table below has since been updated to describe the completed system while preserving
+the original architectural boundaries.
 
 ## Design principles
 
@@ -53,7 +56,7 @@ The intended package is `fed_policy_intelligence`. Only implemented modules are 
 | `data/preprocessing.py` | Versioned conservative text cleaning with removal diagnostics | Implemented in Phase 3 |
 | `data/validation.py` | Dataset counts, warnings, errors, and exclusion reporting | Implemented in Phase 3 |
 | `data/pipeline.py` | CLI orchestration and atomic processed-output writing | Implemented in Phase 3 |
-| Market download provider and trading calendar | New-data acquisition and exchange-session logic | Deferred |
+| `analysis/market_data.py` | Reproducible S&P 500 and Treasury acquisition with provenance | Implemented in Phase 6 |
 | `nlp/chunking.py` | Tokenizer-explicit long-document chunking | Implemented in Phase 4 |
 | `nlp/transformer.py` | Batched CPU/GPU inference and probability aggregation | Implemented in Phase 4 |
 | `nlp/sentiment.py` | FinBERT inference with full probabilities and metadata | Implemented and evaluated as a Phase 4 baseline |
@@ -65,8 +68,8 @@ The intended package is `fed_policy_intelligence`. Only implemented modules are 
 | `analysis/events.py` | Statement-event aggregation, leakage controls, session alignment, and VIX windows | Implemented in Phase 5 |
 | `analysis/regression.py` | Frozen baseline/enhanced VIX models, robust inference, diagnostics, and sensitivity analysis | Implemented in Phase 5 |
 | `evaluation/` | Reviewed annotation schema, validation, classification metrics, and mismatch reporting | Implemented in Phase 4 |
-| `llm/` | Strict structured policy schema, mock/Gemini providers, evidence audit, provenance, usage, and cache | Gemini integration implemented; evaluation pending |
-| `app/` | Streamlit views backed by cached outputs | Deferred |
+| `llm/` | Strict structured policy schema, mock/Gemini providers, evidence audit, provenance, usage, and cache | Implemented and bounded evaluation complete; not used for primary prediction |
+| `app/` | Streamlit views backed by cached outputs | Implemented and page-tested in Phases 7–8 |
 
 This phased creation policy prevents empty modules and documentation that implies unfinished features are available.
 
@@ -125,7 +128,13 @@ The default device is `cpu` and the default LLM provider is `mock`. Colab can se
 
 ## Dependency strategy
 
-`pyproject.toml` is the single dependency source. Phase 2 introduced PyYAML and development tools; Phase 3 added pandas for the tested tabular pipeline. Phase 4 added optional scikit-learn, Transformers, and PyTorch dependencies. Phase 5 adds Statsmodels as an optional analysis dependency. The optional `llm` dependency group adds the official Google Gen AI SDK. PyTorch is currently constrained to `>=2.8,<2.9` because the tested Windows host encountered a reproducible `c10.dll` initialization failure with later wheels. The verified NVIDIA environment uses `torch 2.8.0+cu128`; GPU wheels must be installed from the official PyTorch index before the project extras. Streamlit and market calendars remain deferred.
+`pyproject.toml` is the single dependency source. The lightweight `dev` extra contains
+the complete test runtime, including scikit-learn for the LDA test. NLP, training,
+analysis, market-data, application, topic-comparison, and LLM capabilities remain
+separate optional groups. PyTorch is constrained to `>=2.8,<2.9` because the tested
+Windows host encountered a reproducible `c10.dll` initialization failure with later
+wheels. The verified NVIDIA environment uses `torch 2.8.0+cu128`; its GPU wheel must
+be installed from the official PyTorch index before project extras.
 
 ## Local and Colab execution
 
@@ -138,11 +147,14 @@ The default device is `cpu` and the default LLM provider is `mock`. Colab can se
 
 1. Completed: document identity, validation, and safe preprocessing for the existing corpus.
 2. Completed: local market-data validation while preserving every existing VIX row.
-3. Implement tokenizer-safe sentiment and emotion inference with cached outputs.
-4. Rebuild topic discovery and evaluation.
-5. Implement event alignment, outcomes, baseline models, and robustness checks.
-6. Evaluate the Gemini structured policy extraction against expert labels and grounding checks.
-7. Build the Streamlit application from cached, validated outputs.
+3. Completed: tokenizer-safe sentiment and emotion inference with cached outputs.
+4. Completed: topic discovery, reviewed baseline evaluation, and expert-supervised
+   policy stance.
+5. Completed: event alignment, cross-market outcomes, nested explanatory models, and
+   robustness checks.
+6. Completed: bounded Gemini structured-policy evaluation and decision to retain it
+   only as an experimental enrichment layer.
+7. Completed: tested Streamlit application from cached, validated outputs.
 
 Each step adds its own modules and tests. No later layer should import notebook state or depend on a previous interactive cell execution.
 

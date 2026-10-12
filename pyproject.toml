@@ -18,6 +18,9 @@ dev = [
     "pytest>=7.4,<9",
     "pytest-cov>=5,<8",
     "ruff>=0.9,<1",
+    # Required by the deterministic LDA unit test; keeping it here lets the
+    # documented development install run the complete suite without PyTorch.
+    "scikit-learn>=1.5,<2",
 ]
 nlp = [
     "datasets>=3,<5",
