@@ -1,0 +1,3 @@
+event_date,event_era,domain_policy_share_hawkish,domain_policy_share_dovish,domain_policy_share_neutral,domain_policy_net_stance,pre_event_vix,vix_change_1d,vix_change_5d,sp500_return_1d,sp500_return_5d,dgs2_basis_points_1d,dgs2_basis_points_5d,dgs10_basis_points_1d,dgs10_basis_points_5d
+2024-01-31,2015-2025,0.1,0.2,0.7,-0.1,14.0,0.4,0.8,-0.002,-0.004,-2.0,-4.0,-1.0,-2.0
+2024-03-20,2015-2025,0.6,0.1,0.3,0.5,13.5,-0.3,-0.5,0.003,0.006,3.0,6.0,2.0,4.0

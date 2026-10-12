@@ -1,0 +1,19 @@
+{
+  "design": {
+    "purpose": "explanatory association, not prediction or causal identification"
+  },
+  "outcomes": {
+    "absolute_1d": {
+      "models": {
+        "stance": {
+          "nobs": 2,
+          "adjusted_r_squared": 0.12,
+          "block_wald_test": {
+            "p_value": 0.084,
+            "holm_p_value": 0.759
+          }
+        }
+      }
+    }
+  }
+}

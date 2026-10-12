@@ -1,0 +1,2 @@
+outcome,feature,pearson_r,pearson_p_value,spearman_rho,spearman_p_value,pearson_holm_p_value,pearson_holm_p_value_reject_0_05,spearman_holm_p_value,spearman_holm_p_value_reject_0_05
+vix_change_1d,domain_policy_share_hawkish,0.1,0.2,0.1,0.2,1.0,False,1.0,False

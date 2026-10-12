@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import sys
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -20,7 +20,9 @@ from fed_policy_intelligence.app.data import (
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
+PROCESSED_DIR = Path(
+    os.environ.get("FPI_DASHBOARD_DATA_DIR", PROJECT_ROOT / "data" / "processed")
+).resolve()
 STANCE_COLORS = {"hawkish": "#c65d4b", "dovish": "#2f7f73", "neutral": "#718096"}
 
 
@@ -380,4 +382,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

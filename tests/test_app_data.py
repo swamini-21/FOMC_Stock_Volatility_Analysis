@@ -2,6 +2,7 @@ import json
 from unittest.mock import patch
 
 import pandas as pd
+import pytest
 
 from fed_policy_intelligence.app.data import filter_events, load_dashboard_data
 
@@ -92,3 +93,19 @@ def test_dashboard_loads_cached_outputs_without_api_access() -> None:
     assert len(data.documents) == 1
     assert data.documents.loc[0, "domain_policy_stance"] == "neutral"
     assert len(filtered) == 1
+
+
+def test_dashboard_rejects_malformed_cached_document_data() -> None:
+    with (
+        patch("fed_policy_intelligence.app.data.Path.is_file", return_value=True),
+        patch(
+            "fed_policy_intelligence.app.data.pd.read_csv",
+            return_value=pd.DataFrame({"unexpected": [1]}),
+        ),
+        patch(
+            "fed_policy_intelligence.app.data.Path.read_text",
+            return_value=json.dumps({"design": {}, "outcomes": {}}),
+        ),
+        pytest.raises(ValueError, match="Cached document data is missing columns"),
+    ):
+        load_dashboard_data("malformed-cache")

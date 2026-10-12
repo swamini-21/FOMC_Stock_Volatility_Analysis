@@ -36,3 +36,14 @@ The data, NLP, event, and research pipelines must have produced the cached files
 
 Streamlit prints the local browser URL after startup. Stop the server with `Ctrl+C`.
 
+## Testing
+
+The automated suite uses a small committed cache fixture and Streamlit's application
+testing interface. It opens every page, verifies key content, confirms missing-cache
+errors are user-readable, and checks that malformed cached inputs are rejected. The
+tests do not download data, load transformer models, or call an external API.
+
+```powershell
+& "$FpiGpuEnv\Scripts\python.exe" -m pytest tests/test_app_data.py tests/test_streamlit_app.py
+```
+

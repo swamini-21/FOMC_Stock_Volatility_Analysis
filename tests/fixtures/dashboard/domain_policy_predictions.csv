@@ -1,0 +1,3 @@
+document_id,domain_policy_status,domain_policy_stance,domain_policy_share_hawkish,domain_policy_share_dovish,domain_policy_share_neutral,domain_policy_mean_confidence
+doc-1,success,neutral,0.1,0.2,0.7,0.8
+doc-2,success,hawkish,0.6,0.1,0.3,0.75
