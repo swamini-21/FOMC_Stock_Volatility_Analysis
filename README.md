@@ -39,6 +39,10 @@ This project is being rebuilt from an exploratory notebook into a reproducible F
   The richer controls attenuate the earlier one-day VIX result, and no stance,
   sentiment, or emotion block survives multiplicity correction and crisis exclusion.
   See [`docs/market_data.md`](docs/market_data.md).
+- Phase 7: an interactive Streamlit research explorer now presents cached statements,
+  policy trends, cross-market reactions, robust regression results, and limitations
+  without API access or predictive claims. See
+  [`docs/streamlit_app.md`](docs/streamlit_app.md).
 - Expert-supervised policy stance: the pinned Georgia Tech FOMC dataset now trains a
   local RoBERTa-base classifier, which is evaluated on its untouched external test
   split and applied sentence by sentence to all 295 market-eligible statements. See
@@ -58,6 +62,9 @@ docs/audit_report.md
 docs/architecture.md
 src/fed_policy_intelligence/
 ├── __init__.py
+├── app/
+│   ├── data.py
+│   └── streamlit_app.py
 ├── analysis/
 │   ├── events.py
 │   ├── market_data.py
@@ -136,6 +143,12 @@ Install the optional downloader dependency for S&P 500 data:
 
 ```bash
 python -m pip install -e ".[market-data]"
+```
+
+Install the optional interactive-application dependencies:
+
+```bash
+python -m pip install -e ".[app]"
 ```
 
 ### Windows NVIDIA GPU setup
@@ -266,4 +279,17 @@ This produces descriptive statistics, correlations, nested robust regressions,
 multiple-testing corrections, diagnostics, and a 2007–2009 exclusion sensitivity
 analysis. See [`docs/research_analysis.md`](docs/research_analysis.md) for the design
 and current findings.
+
+## Interactive research explorer
+
+After generating the cached pipeline outputs, launch the dashboard:
+
+```powershell
+& "$FpiGpuEnv\Scripts\python.exe" -m streamlit run `
+  src/fed_policy_intelligence/app/streamlit_app.py
+```
+
+The application reads local cached outputs and does not require a Gemini key. It is an
+observational research interface, not a forecasting or investment-advice product. See
+[`docs/streamlit_app.md`](docs/streamlit_app.md).
 
